@@ -176,7 +176,7 @@ class Aki(commands.Cog):
 
     @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
-    @commands.command()
+    @commands.command(aliases=["akinator"])
     async def aki(self, ctx: commands.Context, *, language: str.lower = "en"):
         """
         Start a game of Akinator!
