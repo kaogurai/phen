@@ -39,10 +39,15 @@ from redbot.core.utils.predicates import MessagePredicate, ReactionPredicate
 from .abc import CompositeMetaClass
 from .commands import Commands
 from .http import SlashHTTP
-from .models import (Button, Component, InteractionButton, InteractionCommand,
-                     InteractionResponse, SlashOptionType)
-from .objects import (FakeMessage, SlashCommand, SlashContext, SlashOption,
-                      SlashTag)
+from .models import (
+    Button,
+    Component,
+    InteractionButton,
+    InteractionCommand,
+    InteractionResponse,
+    SlashOptionType,
+)
+from .objects import FakeMessage, SlashCommand, SlashContext, SlashOption, SlashTag
 from .processor import Processor
 from .utils import dev_check
 
@@ -56,7 +61,7 @@ class SlashTags(Commands, Processor, commands.Cog, metaclass=CompositeMetaClass)
     The TagScript documentation can be found [here](https://phen-cogs.readthedocs.io/en/latest/index.html).
     """
 
-    __version__ = "0.3.1"
+    __version__ = "0.3.2"
     __author__ = ["PhenoM4n4n"]
 
     def format_help_for_context(self, ctx: commands.Context):
