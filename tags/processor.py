@@ -111,6 +111,8 @@ class Processor(MixinMeta):
 
         output = tag.run(self.engine, seed_variables=seed_variables, **kwargs)
         await tag.update_config()
+        dispatch_prefix = "tag" if tag.guild_id else "g-tag"
+        self.bot.dispatch("commandstats_action_v2", f"{dispatch_prefix}:{tag}", ctx.guild)
         to_gather = []
         command_messages = []
         content = output.body[:2000] if output.body else None
@@ -136,7 +138,7 @@ class Processor(MixinMeta):
 
             if actions.get("commands"):
                 for command in actions["commands"]:
-                    if command.startswith("tag") or command == "invoketag":
+                    if command == "invoketag":
                         await ctx.send("Tag looping isn't allowed.")
                         return
                     new = copy(ctx.message)
