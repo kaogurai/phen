@@ -34,8 +34,6 @@ import bs4
 import discord
 import TagScriptEngine as tse
 from redbot.core import commands
-from redbot.core.bot import Red
-from redbot.core.commands import PrivilegeLevel, Requires
 from redbot.core.config import Config
 from redbot.core.utils import AsyncIter
 from redbot.core.utils.chat_formatting import humanize_list, inline, pagify
@@ -172,7 +170,7 @@ class Commands(MixinMeta):
         await menu(ctx, embeds, DEFAULT_CONTROLS)
 
     @commands.guild_only()
-    @commands.group(aliases=["customcom"])
+    @commands.group(aliases=["customcom", "cc", "alias"])
     async def tag(self, ctx: commands.Context):
         """
         Tag management with TagScript.
@@ -610,8 +608,7 @@ class Commands(MixinMeta):
 
     def parse_cc_text(self, content: str) -> str:
         output = self.custom_command_engine.process(content)
-        tagscript = output.body
-        return tagscript
+        return output.body
 
     def convert_customcommand(self, guild_id: int, name: str, custom_command: dict) -> Tag:
         author_id = custom_command.get("author", {"id": None})["id"]
@@ -643,7 +640,7 @@ class Commands(MixinMeta):
         This action cannot be undone.
 
         **Example:**
-        `[p]migratealias`
+        `[p]migratecustomcom`
         """
         await ctx.send(f"Are you sure you want to migrate CustomCommands data to tags? (Y/n)")
         pred = MessagePredicate.yes_or_no(ctx)

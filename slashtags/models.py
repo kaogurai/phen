@@ -29,7 +29,6 @@ from enum import IntEnum
 from typing import Dict, List
 
 import discord
-from redbot.core.bot import Red
 
 from .http import SlashHTTP
 
@@ -49,6 +48,27 @@ __all__ = (
 
 
 class SlashOptionType(IntEnum):
+    """
+    +---------+-------------------------------------------------------------------------------------------------------+----------------------+--------------------------------------------+
+    | Type    | Description                                                                                           | Example              | Adapter                                    |
+    +=========+=======================================================================================================+======================+============================================+
+    | String  | Accepts any user inputted text as an argument.                                                        | ``{string}``         | :doc:`StringAdapter <tse:adapter>`         |
+    +---------+-------------------------------------------------------------------------------------------------------+----------------------+--------------------------------------------+
+    | Integer | Only allows number input for the argument.                                                            | ``{integer}``        | :doc:`IntAdapter <tse:adapter>`            |
+    +---------+-------------------------------------------------------------------------------------------------------+----------------------+--------------------------------------------+
+    | Boolean | Allows either ``True`` or ``False`` as input.                                                         | ``{boolean}``        | :doc:`StringAdapter <tse:adapter>`         |
+    +---------+-------------------------------------------------------------------------------------------------------+----------------------+--------------------------------------------+
+    | User    | Refers to a member of the server or a member in the DM channel, accepting username or IDs as input.   | ``{user(name)}``     | :doc:`MemberAdapter <tse:adapter>`         |
+    +---------+-------------------------------------------------------------------------------------------------------+----------------------+--------------------------------------------+
+    | Channel | Refers to a text, voice, or category channel in this server, accepting channel names or IDs as input. | ``{channel(topic)}`` | :doc:`ChannelAdapter <tse:adapter>`        |
+    +---------+-------------------------------------------------------------------------------------------------------+----------------------+--------------------------------------------+
+    | Role    | Refers to a server role, accepting role name or IDs as input.                                         | ``{role(id)}``       | :doc:`SafeObjectAdapter <tse:adapter>`     |
+    +---------+-------------------------------------------------------------------------------------------------------+----------------------+--------------------------------------------+
+    | Choices | Offers a list of choices for the user to pick.                                                        | ``{choice}``         | :doc:`StringAdapter <tse:adapter>`         |
+    |         | Each option has a name and underlying value which is returned as string argument when accessed.       |                      |                                            |
+    +---------+-------------------------------------------------------------------------------------------------------+----------------------+--------------------------------------------+
+    """
+
     SUB_COMMAND = 1
     SUB_COMMAND_GROUP = 2
     STRING = 3
@@ -241,7 +261,10 @@ class InteractionResponse:
 
     @property
     def channel(self) -> discord.TextChannel:
-        return self.bot.get_channel(self.channel_id)
+        if self.guild_id:
+            return self.guild.get_channel(self.channel_id)
+        else:
+            return self.bot.get_channel(self.channel_id)
 
     @property
     def created_at(self):
@@ -347,7 +370,7 @@ class InteractionCommand(InteractionResponse):
     @property
     def jump_url(self):
         guild_id = getattr(self.guild, "id", "@me")
-        return f"https://discord.com/channels/{guild_id}/{self.channel.id}/{self.id}"
+        return f"https://discord.com/channels/{guild_id}/{self.channel_id}/{self.id}"
 
     def _parse_options(self, options: List[dict], resolved: Dict[str, Dict[str, dict]]):
         for o in options:
