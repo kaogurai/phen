@@ -7,20 +7,22 @@ from typing import Dict, List, Union
 import discord
 from redbot.core import commands
 from redbot.core.utils.chat_formatting import humanize_list, inline, pagify
-from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
+
+# from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 from redbot.core.utils.predicates import MessagePredicate
 
-from .abc import MixinMeta
-from .converters import (
+from ..abc import MixinMeta
+from ..converters import (
     GlobalTagConverter,
     GuildTagConverter,
     TagConverter,
     TagName,
     TagScriptConverter,
 )
-from .models import SlashOptionType
-from .objects import SlashCommand, SlashOption, SlashOptionChoice, SlashTag
-from .utils import ARGUMENT_NAME_DESCRIPTION, dev_check
+from ..http import SlashOptionType
+from ..objects import SlashCommand, SlashOption, SlashOptionChoice, SlashTag
+from ..testing.button_menus import menu as button_menu
+from ..utils import ARGUMENT_NAME_DESCRIPTION, dev_check
 
 TAG_RE = re.compile(r"(?i)(\[p\])?\b(slash\s?)?tag'?s?\b")
 
@@ -369,7 +371,8 @@ class Commands(MixinMeta):
             embed.description = page
             embed.set_footer(text=f"{index}/{len(pages)} | {len(tags)} {slash_tags}")
             embeds.append(embed)
-        await menu(ctx, embeds, DEFAULT_CONTROLS)
+        # await menu(ctx, embeds, DEFAULT_CONTROLS)
+        await button_menu(ctx, embeds)
 
     @slashtag.command("list")
     async def slashtag_list(self, ctx: commands.Context):
@@ -487,9 +490,11 @@ class Commands(MixinMeta):
     async def slashtagset_settings(self, ctx: commands.Context):
         """View SlashTags settings."""
         eval_command = f"✅ (**{self.eval_command}**)" if self.eval_command else "❎"
+        testing_enabled = f"✅" if self.testing_enabled else "❎"
         description = [
             f"Application ID: **{self.application_id}**",
             f"Eval command: {eval_command}",
+            f"Test cog loaded: {testing_enabled}",
         ]
         embed = discord.Embed(
             color=0xC9C9C9, title="SlashTags Settings", description="\n".join(description)
@@ -537,3 +542,24 @@ class Commands(MixinMeta):
         await self.config.eval_command.clear()
         self.eval_command = None
         await ctx.send("`/eval` has been deleted.")
+
+    @slashtagset.command("testing")
+    async def slashtagset_testing(self, ctx: commands.Context, true_or_false: bool = None):
+        """
+        Load or unload the SlashTag interaction development test cog.
+        """
+        target_state = (
+            true_or_false if true_or_false is not None else not await self.config.testing_enabled()
+        )
+        if target_state is self.testing_enabled:
+            loaded = "loaded" if target_state else "unloaded"
+            return await ctx.send(f"The SlashTag interaction testing cog is already {loaded}.")
+
+        await self.config.testing_enabled.set(target_state)
+        if target_state:
+            loaded = "Loaded"
+            self.add_test_cog()
+        else:
+            loaded = "Unloaded"
+            self.remove_test_cog()
+        await ctx.send(f"{loaded} the SlashTag interaction testing cog.")
