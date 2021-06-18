@@ -36,6 +36,7 @@ log = logging.getLogger("red.phenom4n4n.slashtags.models")
 __all__ = (
     "SlashOptionType",
     "ButtonStyle",
+    "InteractionCallbackType",
     "ResponseOption",
     "Component",
     "Button",
@@ -85,6 +86,14 @@ class ButtonStyle(IntEnum):
     green = 3
     red = 4
     link = 5
+
+
+class InteractionCallbackType(IntEnum):
+    pong = 1
+    channel_message_with_source = 4
+    deferred_channel_message_with_source = 5
+    deferred_update_message = 6
+    update_message = 7
 
 
 # {'options': [{'value': 'args', 'type': 3, 'name': 'args'}]
@@ -264,6 +273,7 @@ class InteractionResponse:
         "_original_data",
         "guild_id",
         "channel_id",
+        "_channel",
         "application_id",
         "author_id",
         "author",
@@ -285,6 +295,7 @@ class InteractionResponse:
 
         self.guild_id = guild_id = discord.utils._get_as_snowflake(data, "guild_id")
         self.channel_id = discord.utils._get_as_snowflake(data, "channel_id")
+        self._channel = None
         self.application_id = discord.utils._get_as_snowflake(data, "application_id")
 
         if guild_id:
@@ -312,10 +323,24 @@ class InteractionResponse:
 
     @property
     def channel(self) -> discord.TextChannel:
-        if self.guild_id:
-            return self.guild.get_channel(self.channel_id)
+        if channel := self._channel:
+            return channel
+        elif self.guild_id:
+            if guild_channel := self.guild.get_channel(self.channel_id):
+                self._channel = channel
+                return guild_channel
+        elif dm_channel := self.bot.get_channel(self.channel_id):
+            self._channel = dm_channel
+            return dm_channel
+
+    async def get_channel(self) -> Union[discord.TextChannel, discord.DMChannel]:
+        if channel := self.channel:
+            return channel
+        if not self.guild_id:
+            self._channel = await self.author.create_dm()
         else:
-            return self.bot.get_channel(self.channel_id)
+            self._channel = await self.bot.fetch_channel(self.channel_id)
+        return self._channel
 
     @property
     def created_at(self):
@@ -339,7 +364,7 @@ class InteractionResponse:
         data = await self.http.send_message(
             self._token,
             self.id,
-            type=4,
+            type=InteractionCallbackType.channel_message_with_source,
             initial_response=initial,
             content=content,
             embed=embed,
@@ -363,7 +388,7 @@ class InteractionResponse:
                     state=self._state,
                 )
             except Exception as e:
-                log.exception("Failed to create message object for data:\n%r" % data, exc_info=e)
+                log.exception("Failed to create message object for data:\n%r", data, exc_info=e)
             else:
                 if delete_after is not None:
                     await message.delete(delay=delete_after)
@@ -377,7 +402,7 @@ class InteractionResponse:
         data = await self.http.send_message(
             self._token,
             self.id,
-            type=5,
+            type=InteractionCallbackType.deferred_channel_message_with_source,
             initial_response=initial,
             flags=flags,
         )
@@ -395,9 +420,34 @@ class InteractionButton(InteractionResponse):
         interaction_data = self.interaction_data
         self.custom_id = interaction_data["custom_id"]
         self.component_type = interaction_data["component_type"]
-        self.message = discord.Message(
-            channel=self.channel, data=data["message"], state=self._state
+
+        message = data["message"]
+        if reference := message.get("message_reference"):
+            if "channel_id" not in reference:
+                reference["channel_id"] = self.channel_id
+                # used if dislash is loaded since Message.reference creation
+                # pops channel_id from the message_reference dict
+
+        try:
+            self.message = discord.Message(channel=self.channel, data=message, state=self._state)
+        except Exception as exc:
+            log.exception("An error occured while creating the message for %r", self, exc_info=exc)
+            self.message = None
+
+    async def defer_update(self, *, hidden: bool = False):
+        flags = 64 if hidden else None
+        initial = not self.sent
+        data = await self.http.send_message(
+            self._token,
+            self.id,
+            type=InteractionCallbackType.deferred_update_message,
+            initial_response=initial,
+            flags=flags,
         )
+        if not self.sent:
+            self.sent = True
+        self.deferred = True
+        return data
 
     async def update(
         self,
@@ -417,7 +467,7 @@ class InteractionButton(InteractionResponse):
             data = await self.http.send_message(
                 self._token,
                 self.id,
-                type=7,
+                type=InteractionCallbackType.update_message,
                 initial_response=initial,
                 content=content,
                 embed=embed,
@@ -427,6 +477,7 @@ class InteractionButton(InteractionResponse):
                 flags=flags,
                 components=components,
             )
+            self.sent = True
         else:
             data = await self.http.edit_message(
                 self._token,
@@ -438,8 +489,6 @@ class InteractionButton(InteractionResponse):
                 original=True,
             )
 
-        if not self.sent:
-            self.sent = True
         if not self.completed:
             self.completed = True
 
@@ -488,7 +537,7 @@ class InteractionCommand(InteractionResponse):
                     option = handler(o, option, resolved)
                 except Exception as error:
                     log.exception(
-                        "Failed to handle option data for option:\n%r" % o, exc_info=error
+                        "Failed to handle option data for option:\n%r", o, exc_info=error
                     )
             self.options.append(option)
 
