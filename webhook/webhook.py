@@ -162,7 +162,7 @@ class Webhook(commands.Cog):
         
     @commands.bot_has_permissions(manage_webhooks=True)
     @commands.admin_or_permissions(manage_webhooks=True, mention_everyone=True)
-    @webhook.command(aliases['saymention'])
+    @webhook.command(aliases=['saymention'])
     async def saym(self, ctx: commands.Context, *, message: str):
         """
         Sends a message to the channel as a webhook with your avatar and display name.
