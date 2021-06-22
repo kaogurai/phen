@@ -127,7 +127,7 @@ class Webhook(commands.Cog):
             content=message,
         )
     
-    @commands.admin_or_permissions(manage_webhooks=True)
+    @commands.admin_or_permissions(manage_webhooks=True, mention_everyone=True)
     @webhook.command(hidden=True, aliases=['sendmention'])
     async def sendm(
         self, ctx: commands.Context, webhook_link: WebhookLinkConverter, *, message: str
@@ -161,6 +161,7 @@ class Webhook(commands.Cog):
         )
         
     @commands.bot_has_permissions(manage_webhooks=True)
+    @commands.admin_or_permissions(manage_webhooks=True, mention_everyone=True)
     @webhook.command(aliases['saymention'])
     async def saym(self, ctx: commands.Context, *, message: str):
         """
@@ -196,7 +197,7 @@ class Webhook(commands.Cog):
             username=member.display_name,
         )
 
-    @commands.admin_or_permissions(manage_webhooks=True, manage_guild=True)
+    @commands.admin_or_permissions(manage_webhooks=True, manage_guild=True, mention_everyone=True)
     @commands.bot_has_permissions(manage_webhooks=True)
     @webhook.command(hidden=True, aliases=['loudsudo', 'sudomention'])
     async def sudom(self, ctx: commands.Context, member: discord.Member, *, message: str):
