@@ -126,6 +126,24 @@ class Webhook(commands.Cog):
             avatar_url=ctx.author.avatar_url,
             content=message,
         )
+    
+    @commands.admin_or_permissions(manage_webhooks=True)
+    @webhook.command(hidden=True, aliases=['sendmention'])
+    async def sendm(
+        self, ctx: commands.Context, webhook_link: WebhookLinkConverter, *, message: str
+    ):
+        """
+        Sends a message to the specified webhook using your avatar and display name.
+        
+        Warning: This allows you to ping users, roles, here, and everyone.
+        """
+        await self.webhook_link_send(
+            webhook_link,
+            username=ctx.author.display_name,
+            avatar_url=ctx.author.avatar_url,
+            content=message,
+            allowed_mentions=USER_MENTIONS,
+        )
 
     @commands.bot_has_permissions(manage_webhooks=True)
     @webhook.command()
@@ -140,6 +158,26 @@ class Webhook(commands.Cog):
             content=message,
             avatar_url=ctx.author.avatar_url,
             username=ctx.author.display_name,
+        )
+        
+    @commands.bot_has_permissions(manage_webhooks=True)
+    @webhook.command(aliases['saymention'])
+    async def saym(self, ctx: commands.Context, *, message: str):
+        """
+        Sends a message to the channel as a webhook with your avatar and display name.
+        
+        Warning: This allows you to ping users, roles, here, and everyone.
+        """
+        await self.delete_quietly(ctx)
+        await self.send_to_channel(
+            ctx.channel,
+            ctx.me,
+            ctx.author,
+            ctx=ctx,
+            content=message,
+            avatar_url=ctx.author.avatar_url,
+            username=ctx.author.display_name,
+            allowed_mentions=USER_MENTIONS,
         )
 
     @commands.admin_or_permissions(manage_webhooks=True)
@@ -160,9 +198,13 @@ class Webhook(commands.Cog):
 
     @commands.admin_or_permissions(manage_webhooks=True, manage_guild=True)
     @commands.bot_has_permissions(manage_webhooks=True)
-    @webhook.command(hidden=True)
-    async def loudsudo(self, ctx: commands.Context, member: discord.Member, *, message: str):
-        """Sends a message to the channel as a webhook with the specified member's avatar and display name."""
+    @webhook.command(hidden=True, aliases=['loudsudo', 'sudomention'])
+    async def sudom(self, ctx: commands.Context, member: discord.Member, *, message: str):
+        """
+        Sends a message to the channel as a webhook with the specified member's avatar and display name.
+        
+        Warning: This allows you to ping users, roles, here, and everyone.
+        """
         await self.send_to_channel(
             ctx.channel,
             ctx.me,
@@ -174,9 +216,9 @@ class Webhook(commands.Cog):
             allowed_mentions=USER_MENTIONS,
         )
 
-    @commands.admin_or_permissions(manage_webhooks=True, manage_guild=True)
+    @commands.admin_or_permissions(manage_webhooks=True)
     @commands.bot_has_permissions(manage_webhooks=True)
-    @webhook.command(hidden=True)
+    @webhook.command()
     async def clyde(self, ctx: commands.Context, *, message: str):
         """Sends a message to the channel as a webhook with Clyde's avatar and name."""
         await self.delete_quietly(ctx)
@@ -188,7 +230,6 @@ class Webhook(commands.Cog):
             content=message,
             avatar_url="https://discordapp.com/assets/f78426a064bc9dd24847519259bc42af.png",
             username="C​I​​​​​​y​d​e",
-            allowed_mentions=USER_MENTIONS,
         )
 
     @commands.max_concurrency(1, commands.BucketType.guild)
