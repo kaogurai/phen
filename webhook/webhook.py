@@ -142,7 +142,7 @@ class Webhook(commands.Cog):
             username=ctx.author.display_name,
             avatar_url=ctx.author.avatar_url,
             content=message,
-            allowed_mentions=USER_MENTIONS,
+            allowed_mentions=discord.AllowedMentions.all(),
         )
 
     @commands.bot_has_permissions(manage_webhooks=True)
@@ -177,7 +177,7 @@ class Webhook(commands.Cog):
             content=message,
             avatar_url=ctx.author.avatar_url,
             username=ctx.author.display_name,
-            allowed_mentions=USER_MENTIONS,
+            allowed_mentions=discord.AllowedMentions.all(),
         )
 
     @commands.admin_or_permissions(manage_webhooks=True)
@@ -213,7 +213,7 @@ class Webhook(commands.Cog):
             content=message,
             avatar_url=member.avatar_url,
             username=member.display_name,
-            allowed_mentions=USER_MENTIONS,
+            allowed_mentions=discord.AllowedMentions.all(),
         )
 
     @commands.admin_or_permissions(manage_webhooks=True)
