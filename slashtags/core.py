@@ -124,13 +124,6 @@ class SlashTags(Commands, Processor, commands.Cog, metaclass=CompositeMetaClass)
         self.load_task.cancel()
         asyncio.create_task(self.session.close())
 
-    async def cog_before_invoke(self, ctx: commands.Context) -> bool:
-        if not self.bot.get_cog("SlashInjector"):
-            raise commands.UserFeedbackCheckFailure(
-                "This cog requires `slashinjector` by Kowlin/Sentinel to be loaded to parse slash command responses (<https://github.com/Kowlin/Sentinel>)."
-            )
-        return True
-
     async def pre_load(self):
         data = await self.config.all()
         self.eval_command = data["eval_command"]
