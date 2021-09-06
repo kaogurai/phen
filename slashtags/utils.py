@@ -59,8 +59,8 @@ async def validate_tagscriptengine(bot: Red, tse_version: str, *, reloaded: bool
     message = (
         "The SlashTags cog attempted to install TagScriptEngine, but the version installed "
         "is outdated. Shut down your bot, then in shell in your venv, run the following "
-        f"commands:\n{commands}\nAfter running these commands, restart your bot and reinstall "
-        "Tags. If it continues to fail to load, contact the cog author."
+        f"commands:\n{commands}\nAfter running these commands, restart your bot and reload "
+        "SlashTags. If it continues to fail to load, contact the cog author."
     )
 
     if not hasattr(tse, "VersionInfo"):
@@ -75,3 +75,12 @@ async def validate_tagscriptengine(bot: Red, tse_version: str, *, reloaded: bool
     if tse.version_info < tse.VersionInfo.from_str(tse_version):
         await bot.send_to_owners(message)
         raise CogLoadError(message)
+
+
+def chunks(l, n):
+    """
+    Yield successive n-sized chunks from l.
+    https://github.com/flaree/flare-cogs/blob/08b78e33ab814aa4da5422d81a5037ae3df51d4e/commandstats/commandstats.py#L16
+    """
+    for i in range(0, len(l), n):
+        yield l[i : i + n]

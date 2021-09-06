@@ -49,7 +49,7 @@ class DisboardReminder(commands.Cog):
     Set a reminder to bump on Disboard.
     """
 
-    __version__ = "1.3.4"
+    __version__ = "1.3.5"
 
     def format_help_for_context(self, ctx):
         pre_processed = super().format_help_for_context(ctx)
@@ -428,7 +428,7 @@ class DisboardReminder(commands.Cog):
         if not message.embeds:
             return
         embed = message.embeds[0]
-        if "Bump done" in embed.description:
+        if ":thumbsup:" in embed.description:
             return embed
 
     async def respond_to_bump(
