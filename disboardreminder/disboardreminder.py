@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2020-2021 phenom4n4n
+Copyright (c) 2020-present phenom4n4n
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -93,6 +93,7 @@ class DisboardReminder(commands.Cog):
         self.tagscript_engine = tse.Interpreter(blocks)
 
         self.bump_loop = self.create_task(self.bump_check_loop())
+        self.initialize_task = self.create_task(self.initialize())
 
     def cog_unload(self):
         try:
@@ -114,13 +115,14 @@ class DisboardReminder(commands.Cog):
             for task in tasks.values():
                 task.cancel()
 
-    def task_done_callback(self, task: asyncio.Task):
+    @staticmethod
+    def task_done_callback(task: asyncio.Task):
         try:
             task.result()
         except asyncio.CancelledError:
             pass
         except Exception as error:
-            log.exception(f"Task failed.", exc_info=error)
+            log.exception("Task failed.", exc_info=error)
 
     def create_task(self, coroutine: Coroutine, *, name: str = None):
         task = asyncio.create_task(coroutine, name=name)

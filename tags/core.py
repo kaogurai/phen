@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2020-2021 phenom4n4n
+Copyright (c) 2020-present phenom4n4n
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +96,7 @@ class Tags(
         self.initialize_task = None
         self.dot_parameter: bool = None
         self.async_enabled: bool = None
-        # self.initialize_task = self.create_task(self.initialize())
+        self.initialize_task = self.create_task(self.initialize())
 
         self.session = aiohttp.ClientSession()
         self.docs: list = []

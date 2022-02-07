@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) 2020-2021 phenom4n4n
+Copyright (c) 2020-present phenom4n4n
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -70,4 +70,3 @@ async def setup(bot: Red) -> None:
 
     tags = Tags(bot)
     bot.add_cog(tags)
-    await tags.initialize()
