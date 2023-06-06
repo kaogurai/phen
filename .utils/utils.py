@@ -59,6 +59,9 @@ HEADER = """<h1 align="center">
 <h4 align="center">Various phun and utility cogs for Red-DiscordBot.</h4>
 
 # Installation
+Follow the installation steps for [Red-DiscordBot](https://github.com/Cog-Creators/Red-DiscordBot).
+Once the bot is installed, run the following command in Discord:
+
 `[p]repo add Phen-Cogs https://github.com/phenom4n4n/phen-cogs`
 
 # Cogs
@@ -171,7 +174,7 @@ def mass_fix():
                 info = InfoJson.from_json(json.load(infile))
             save_json(f"{ROOT}/{folder}/info.json", info.__dict__)
         except Exception:
-            log.exception(f"Error reading info.json in {folder}")
+            log.exception("Error reading info.json in %s", folder)
             continue
 
 
@@ -317,7 +320,7 @@ def countlines(include_hidden: bool = False, include_disabled: bool = False):
     """Count the number of lines of .py files in all folders"""
     total = 0
     totals = []
-    log.info(f"{ROOT}")
+    log.info(ROOT)
     for folder in os.listdir(f"{ROOT}/"):
         cog = 0
         if folder.startswith("."):
@@ -356,7 +359,7 @@ def countchars(include_hidden: bool = False, include_disabled: bool = False):
     """Count the number of lines of .py files in all folders"""
     total = 0
     totals = []
-    log.info(f"{ROOT}")
+    log.info(ROOT)
     for folder in os.listdir(f"{ROOT}/"):
         cog = 0
         if folder.startswith("."):
@@ -406,7 +409,7 @@ def makereadme():
                         data = json.loads(infile.read())
                     info = InfoJson.from_json(data)
                 except Exception:
-                    log.exception(f"Error reading info.json {file}")
+                    log.exception("Error reading info.json %s", file)
             if _version == "":
                 with open(file, encoding="utf-8") as infile:
                     data = infile.read()
@@ -417,7 +420,7 @@ def makereadme():
             to_append = [info.name, _version]
             description = f"<details><summary>{info.short}</summary>{info.description}</details>"
             to_append.append(description)
-            to_append.append(babel_list(info.author, style="standard"))
+            to_append.append(babel_list(info.author, locale="en_US_POSIX"))
             table_data.append(to_append)
 
     body = tabulate.tabulate(
@@ -425,7 +428,7 @@ def makereadme():
         headers=["Name", "Status/Version", "Description (Click to see full status)", "Authors"],
         tablefmt="github",
     )
-    with open(f"{ROOT}/README.md", "w") as outfile:
+    with open(f"{ROOT}/README.md", "w", encoding="utf-8") as outfile:
         outfile.write(HEADER.format(body=body))
 
 
@@ -452,7 +455,7 @@ def makerequirements():
                     for req in info.requirements:
                         requirements.add(req)
                 except Exception:
-                    log.exception(f"Error reading info.json {file}")
+                    log.exception("Error reading info.json %s", file)
     with open(ROOT / "requirements.txt", "w", encoding="utf-8") as outfile:
         outfile.write("\n".join(requirements))
 

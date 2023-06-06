@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import asyncio
 import logging
 
 import aiohttp
@@ -33,7 +32,7 @@ from redbot.core import commands
 from redbot.core.bot import Red
 from redbot.core.config import Config
 
-from .menus import channel_is_nsfw, get_menu
+from .views import AkiView, channel_is_nsfw
 
 log = logging.getLogger("red.phenom4n4n.aki")
 
@@ -52,7 +51,7 @@ class Aki(commands.Cog):
         )
         self.session = aiohttp.ClientSession()
 
-    __version__ = "1.1.1"
+    __version__ = "1.2.0"
 
     def format_help_for_context(self, ctx):
         pre_processed = super().format_help_for_context(ctx)
@@ -62,29 +61,17 @@ class Aki(commands.Cog):
     async def red_delete_data_for_user(self, *, requester: str, user_id: int) -> None:
         return
 
-    def cog_unload(self):
-        asyncio.create_task(self.session.close())
+    async def cog_unload(self):
+        await self.session.close()
 
     @commands.max_concurrency(1, commands.BucketType.channel)
     @commands.bot_has_permissions(embed_links=True, add_reactions=True)
     @commands.command(aliases=["akinator"])
-    async def aki(
-        self, ctx: commands.Context, language: str.lower = "en", use_buttons: bool = True
-    ):
+    async def aki(self, ctx: commands.Context, language: str.lower = "en"):
         """
         Start a game of Akinator!
-
-        Controls:
-        > ✅ : yes
-        > ❎ : no
-        > ❔ : i don't know
-        > 📉 : probably
-        > 📈 : probably not
-        > 🔙 : back
-        > 🏆 : win
-        > 🗑️ : cancel
         """
-        await ctx.trigger_typing()
+        await ctx.typing()
         aki = Akinator()
         child_mode = not channel_is_nsfw(ctx.channel)
         try:
@@ -101,5 +88,4 @@ class Aki(commands.Cog):
             await ctx.send("I encountered an error while connecting to the Akinator servers.")
         else:
             aki_color = discord.Color(0xE8BC90)
-            menu = get_menu(buttons=use_buttons)
-            await menu(aki, aki_color).start(ctx)
+            await AkiView(aki, aki_color, author_id=ctx.author.id).start(ctx)

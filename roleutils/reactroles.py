@@ -99,12 +99,12 @@ class ReactRoles(MixinMeta):
     def emoji_id(self, emoji: Union[discord.Emoji, str]) -> str:
         return emoji if isinstance(emoji, str) else str(emoji.id)
 
-    @commands.admin_or_permissions(manage_roles=True)
-    @commands.group(aliases=["rr"])
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.group()
     async def reactrole(self, ctx: commands.Context):
         """Base command for Reaction Role management."""
 
-    # @commands.admin_or_permissions(manage_roles=True)
+    # @commands.has_guild_permissions(manage_roles=True)
     # @commands.bot_has_permissions(manage_roles=True)
     # @reactrole.command()
     # async def enable(self, ctx: commands.Context, true_or_false: bool = None):
@@ -211,7 +211,7 @@ class ReactRoles(MixinMeta):
                 name = msg.content
 
         description = f"React to the following emoji to receive the corresponding role:\n"
-        for (emoji, role) in emoji_role_groups:
+        for emoji, role in emoji_role_groups:
             description += f"{emoji}: {role.mention}\n"
         e = discord.Embed(title=name[:256], color=color, description=description)
         message = await channel.send(embed=e)
@@ -221,7 +221,7 @@ class ReactRoles(MixinMeta):
             r["channel"] = message.channel.id
             r["rules"] = None
             binds = {}
-            for (emoji, role) in emoji_role_groups:
+            for emoji, role in emoji_role_groups:
                 emoji_id = self.emoji_id(emoji)
                 if emoji_id in binds or role.id in binds.values():
                     duplicates[emoji] = role
@@ -343,7 +343,7 @@ class ReactRoles(MixinMeta):
         embeds = []
         pages = pagify(description, delims=["\n\n", "\n"])
         base_embed = discord.Embed(color=color)
-        base_embed.set_author(name="Reaction Roles", icon_url=ctx.guild.icon_url)
+        base_embed.set_author(name="Reaction Roles", icon_url=ctx.guild.icon.url if guild.icon else None)
         for page in pages:
             e = base_embed.copy()
             e.description = page
